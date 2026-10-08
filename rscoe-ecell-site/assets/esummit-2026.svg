@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800" viewBox="0 0 1200 800">
+  <defs>
+    <radialGradient id="bgGlow" cx="50%" cy="38%" r="75%">
+      <stop offset="0%" stop-color="#16215c"/>
+      <stop offset="45%" stop-color="#0a1030"/>
+      <stop offset="100%" stop-color="#04060d"/>
+    </radialGradient>
+    <linearGradient id="titleGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#60a5fa"/>
+      <stop offset="55%" stop-color="#a78bfa"/>
+      <stop offset="100%" stop-color="#e879f9"/>
+    </linearGradient>
+    <linearGradient id="beam" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="beam2" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#a855f7" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#a855f7" stop-opacity="0"/>
+    </linearGradient>
+    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
+      <path d="M 48 0 L 0 0 0 48" fill="none" stroke="#ffffff" stroke-opacity="0.06" stroke-width="1"/>
+    </pattern>
+  </defs>
+
+  <rect width="1200" height="800" fill="url(#bgGlow)"/>
+  <rect width="1200" height="800" fill="url(#grid)"/>
+
+  <!-- stage light beams -->
+  <polygon points="180,800 420,180 520,180 340,800" fill="url(#beam)"/>
+  <polygon points="1020,800 780,180 680,180 860,800" fill="url(#beam)"/>
+  <polygon points="480,800 560,220 640,220 720,800" fill="url(#beam2)"/>
+  <ellipse cx="470" cy="180" rx="26" ry="26" fill="#bfdbfe" opacity="0.9"/>
+  <ellipse cx="730" cy="180" rx="26" ry="26" fill="#e9d5ff" opacity="0.9"/>
+  <ellipse cx="600" cy="220" rx="20" ry="20" fill="#ffffff" opacity="0.95"/>
+
+  <!-- crowd silhouette -->
+  <ellipse cx="600" cy="830" rx="620" ry="120" fill="#000" opacity="0.75"/>
+  <g fill="#000" opacity="0.9">
+    <circle cx="120" cy="700" r="26"/><rect x="88" y="722" width="64" height="90" rx="14"/>
+    <circle cx="250" cy="712" r="24"/><rect x="220" y="732" width="60" height="85" rx="14"/>
+    <circle cx="370" cy="705" r="25"/><rect x="338" y="727" width="64" height="88" rx="14"/>
+    <circle cx="830" cy="705" r="25"/><rect x="798" y="727" width="64" height="88" rx="14"/>
+    <circle cx="955" cy="712" r="24"/><rect x="925" y="732" width="60" height="85" rx="14"/>
+    <circle cx="1075" cy="700" r="26"/><rect x="1043" y="722" width="64" height="90" rx="14"/>
+  </g>
+
+  <!-- eyebrow -->
+  <text x="600" y="330" text-anchor="middle" font-family="Arial, sans-serif" font-size="30" font-weight="bold" letter-spacing="10" fill="#93c5fd">E-CELL RSCOE PRESENTS</text>
+
+  <!-- title -->
+  <text x="600" y="470" text-anchor="middle" font-family="'Arial Black', Arial, sans-serif" font-size="170" font-weight="900" letter-spacing="4" fill="url(#titleGrad)">E-SUMMIT</text>
+  <text x="600" y="590" text-anchor="middle" font-family="'Arial Black', Arial, sans-serif" font-size="120" font-weight="900" letter-spacing="14" fill="#ffffff">'26</text>
+
+  <!-- tagline -->
+  <text x="600" y="650" text-anchor="middle" font-family="Georgia, serif" font-style="italic" font-size="34" fill="#c4b5fd">Where Ideas Matter</text>
+
+  <!-- underline accent -->
+  <rect x="470" y="678" width="260" height="5" rx="2.5" fill="url(#titleGrad)"/>
+</svg>

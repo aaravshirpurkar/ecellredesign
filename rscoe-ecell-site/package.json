@@ -1,0 +1,19 @@
+{
+  "name": "rscoe-ecell-site",
+  "version": "1.0.0",
+  "description": "Local recreation of ecellrscoe.org (internal RSCOE E-Cell redesign)",
+  "main": "index.js",
+  "scripts": {
+    "start": "node serve.js",
+    "compare": "node compare.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "pixelmatch": "^8.0.0",
+    "playwright-core": "^1.64.0",
+    "pngjs": "^7.0.0"
+  }
+}
