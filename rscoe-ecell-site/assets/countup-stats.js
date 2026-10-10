@@ -49,83 +49,230 @@
     }
   }, 1200);
 
-  // Pillars graphic: full-width SVG columns; hovering a pillar reveals its detail card below
+  // Pillars architecture: vertically staggered heights & interactive click-to-reveal square cards
   setInterval(() => {
     if (document.querySelector('svg.pillars-svg')) return;
     const h = [...document.querySelectorAll('h2')].find((e) => /Three Pillars/.test(e.textContent));
     if (!h) return;
     const sec = h.closest('section');
     const head = h.parentElement;
-    // hide the three detail cards until a pillar is hovered; normalize to equal size
+
+    // The three detailed cards ("the square thing")
     const cards = [...sec.querySelectorAll('.group')].filter((g) => /0[123]/.test(g.textContent)).slice(0, 3);
-    cards.forEach((c) => {
-      c.style.opacity = '0';
-      c.style.visibility = 'hidden';
-      c.style.transition = 'opacity .4s ease';
-      c.style.width = '320px';
-      c.style.maxWidth = '320px';
+    if (cards.length < 3) return;
+
+    // Card container styling
+    const cardsRow = cards[0].parentElement;
+    if (cardsRow) {
+      cardsRow.className = 'relative flex flex-col md:flex-row items-center justify-center gap-8 lg:gap-12 min-h-[460px] py-6 w-full';
+    }
+
+    // Configure each card with glassmorphism and animated pop-in
+    cards.forEach((c, idx) => {
+      c.classList.add('pillar-card-wrapper');
+      c.style.width = '100%';
+      c.style.maxWidth = '360px';
       c.style.margin = '0 auto';
       c.style.transform = 'none';
+
+      // Inner spinning square portal size consistency
       c.querySelectorAll('div').forEach((d) => {
         const cl = (d.className && d.className.toString) ? d.className.toString() : '';
         if (/w-40|w-36|w-48|w-42/.test(cl) && /h-40|h-36|h-48|h-42/.test(cl)) {
-          d.style.width = '192px';
-          d.style.height = '192px';
-          d.style.marginBottom = '3rem';
+          d.style.width = '190px';
+          d.style.height = '190px';
+          d.style.marginBottom = '2.5rem';
         }
       });
     });
-    // sticky reveal: once a pillar is hovered its card stays visible until refresh
-    const reveal = (i) => {
-      cards[i].style.opacity = '1';
-      cards[i].style.visibility = 'visible';
+
+    // Track active states: default Pillar 01 active on load, others revealed upon clicking
+    let activeStates = [true, false, false];
+
+    const syncCardVisibility = () => {
+      cards.forEach((c, i) => {
+        if (activeStates[i]) {
+          c.classList.remove('pillar-card-hidden');
+          c.classList.add('pillar-card-visible');
+        } else {
+          c.classList.remove('pillar-card-visible');
+          c.classList.add('pillar-card-hidden');
+        }
+      });
+      // Update SVG pillar visual states
+      pillarGroups.forEach((g, i) => {
+        if (activeStates[i]) {
+          g.classList.add('pillar-active');
+          g.style.opacity = '1';
+          g.style.filter = `drop-shadow(0 0 26px ${colors[i]})`;
+        } else {
+          g.classList.remove('pillar-active');
+          g.style.opacity = '0.7';
+          g.style.filter = 'none';
+        }
+      });
     };
-    const W = 1200, H = 400;
+
+    const togglePillar = (i) => {
+      if (activeStates[i] && activeStates.filter(Boolean).length > 1) {
+        activeStates[i] = false;
+      } else {
+        activeStates[i] = true;
+      }
+      syncCardVisibility();
+    };
+
+    const W = 1200, H = 450;
     const mk = (tag, attrs) => {
       const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
       for (const k in attrs) el.setAttribute(k, attrs[k]);
       return el;
     };
-    const svg = mk('svg', { viewBox: `0 0 ${W} ${H}`, class: 'pillars-svg', style: 'width:100%;max-width:1100px;display:block;margin:0 auto 1rem;' });
-    // platform spanning the full section width
-    svg.appendChild(mk('rect', { x: 20, y: 16, width: W - 40, height: 52, rx: 10, fill: 'rgba(255,255,255,0.06)', stroke: 'rgba(168,85,247,0.6)' }));
-    const t = mk('text', { x: W / 2, y: 52, 'text-anchor': 'middle', 'font-size': 24, 'font-weight': 800, 'font-family': 'Plus Jakarta Sans, sans-serif', fill: '#a78bfa' });
-    t.textContent = 'E-Cell RSCOE';
-    svg.appendChild(t);
-    const labels = ['The Innovation', 'The Execution', 'The Impact'];
-    const colors = ['#3b82f6', '#a855f7', '#10b981'];
-    const groups = [];
-    for (let i = 0; i < 3; i++) {
-      const cx = 200 + i * 400;
-      const g = mk('g', { style: 'cursor:pointer;transition:opacity .3s' });
-      // capital
-      g.appendChild(mk('path', { d: `M ${cx - 70} 68 L ${cx + 70} 68 L ${cx + 52} 92 L ${cx - 52} 92 Z`, fill: colors[i] }));
-      g.appendChild(mk('rect', { x: cx - 52, y: 92, width: 104, height: 12, fill: colors[i] }));
-      // fluted shaft
-      g.appendChild(mk('rect', { x: cx - 48, y: 104, width: 96, height: 210, fill: colors[i], opacity: 0.75 }));
-      for (let f = -36; f <= 36; f += 12) {
-        g.appendChild(mk('line', { x1: cx + f, y1: 104, x2: cx + f, y2: 314, stroke: 'rgba(0,0,0,0.25)', 'stroke-width': 4 }));
-      }
-      // base
-      g.appendChild(mk('rect', { x: cx - 52, y: 314, width: 104, height: 12, fill: colors[i] }));
-      g.appendChild(mk('path', { d: `M ${cx - 52} 326 L ${cx + 52} 326 L ${cx + 70} 348 L ${cx - 70} 348 Z`, fill: colors[i] }));
-      // hover label
-      const lbl = mk('text', { x: cx, y: 384, 'text-anchor': 'middle', 'font-size': 18, 'font-weight': 700, 'font-family': 'Plus Jakarta Sans, sans-serif', fill: '#fff', opacity: 0, style: 'transition:opacity .3s' });
-      lbl.textContent = labels[i];
-      g.appendChild(lbl);
-      g.addEventListener('mouseenter', () => {
-        lbl.setAttribute('opacity', 1);
-        groups.forEach((o, j) => o.setAttribute('opacity', j === i ? 1 : 0.45));
-        reveal(i);
-      });
-      g.addEventListener('click', () => { lbl.setAttribute('opacity', 1); reveal(i); });
-      groups.push(g);
-      svg.appendChild(g);
-    }
-    svg.addEventListener('mouseleave', () => {
-      groups.forEach((o) => o.setAttribute('opacity', 1));
+
+    const svg = mk('svg', {
+      viewBox: `0 0 ${W} ${H}`,
+      class: 'pillars-svg',
+      style: 'width:100%;max-width:1150px;display:block;margin:0 auto 1.5rem;overflow:visible;'
     });
+
+    // Balanced Architrave / Roof Beam connecting all three pillars at equal height
+    const roofBeam = mk('rect', {
+      x: 80, y: 30, width: 1040, height: 56, rx: 12,
+      fill: 'rgba(15, 23, 42, 0.85)',
+      stroke: 'rgba(168,85,247,0.5)',
+      'stroke-width': '2'
+    });
+    svg.appendChild(roofBeam);
+
+    const crestText = mk('text', {
+      x: 600, y: 65, 'text-anchor': 'middle',
+      'font-size': '22', 'font-weight': '800',
+      'font-family': 'Plus Jakarta Sans, sans-serif',
+      fill: '#c084fc',
+      'letter-spacing': '2px'
+    });
+    crestText.textContent = 'E-CELL RSCOE';
+    svg.appendChild(crestText);
+
+    const colors = ['#3b82f6', '#a855f7', '#10b981'];
+    const titles = ['The Innovation', 'The Execution', 'The Impact'];
+    const phases = ['Creation Phase', 'Core Transmission', 'Scale Phase'];
+    const pillarGroups = [];
+
+    // All 3 Pillars are the exact same size:
+    // cx: 240, 600, 960
+    // topY: 86 (touches bottom of roof beam)
+    // shaftTop: 114
+    // shaftBot: 334 (height: 220px)
+    // botY: 368 (base height: 34px)
+    // width: 104 (uniform shaft width)
+    const pillarConfigs = [
+      { cx: 240, topY: 86, shaftTop: 114, shaftBot: 334, botY: 368, width: 104, num: '01' },
+      { cx: 600, topY: 86, shaftTop: 114, shaftBot: 334, botY: 368, width: 104, num: '02' },
+      { cx: 960, topY: 86, shaftTop: 114, shaftBot: 334, botY: 368, width: 104, num: '03' }
+    ];
+
+    pillarConfigs.forEach((cfg, i) => {
+      const g = mk('g', {
+        class: 'pillar-clickable pillar-group',
+        'data-index': i,
+        style: 'cursor:pointer;transition:all 0.35s ease;'
+      });
+
+      const halfW = cfg.width / 2;
+      const capW = cfg.width + 28;
+      const halfCapW = capW / 2;
+
+      // Capital (Top molding)
+      g.appendChild(mk('path', {
+        d: `M ${cfg.cx - halfCapW} ${cfg.topY} L ${cfg.cx + halfCapW} ${cfg.topY} L ${cfg.cx + halfW + 6} ${cfg.shaftTop} L ${cfg.cx - halfW - 6} ${cfg.shaftTop} Z`,
+        fill: colors[i]
+      }));
+      g.appendChild(mk('rect', {
+        x: cfg.cx - halfW - 6, y: cfg.shaftTop - 8,
+        width: cfg.width + 12, height: 8,
+        fill: colors[i]
+      }));
+
+      // Fluted Shaft
+      g.appendChild(mk('rect', {
+        x: cfg.cx - halfW, y: cfg.shaftTop,
+        width: cfg.width, height: cfg.shaftBot - cfg.shaftTop,
+        fill: colors[i], opacity: '0.75'
+      }));
+
+      // Shaft fluting lines
+      const step = cfg.width / 7;
+      for (let f = 1; f < 7; f++) {
+        g.appendChild(mk('line', {
+          x1: cfg.cx - halfW + f * step, y1: cfg.shaftTop,
+          x2: cfg.cx - halfW + f * step, y2: cfg.shaftBot,
+          stroke: 'rgba(0,0,0,0.3)', 'stroke-width': '3.5'
+        }));
+      }
+
+      // Center glowing core badge with number
+      const coreY = (cfg.shaftTop + cfg.shaftBot) / 2;
+      g.appendChild(mk('circle', {
+        cx: cfg.cx, cy: coreY, r: 24,
+        fill: '#090d16', stroke: colors[i], 'stroke-width': '2.5'
+      }));
+      const coreNum = mk('text', {
+        x: cfg.cx, y: coreY + 6,
+        'text-anchor': 'middle', 'font-size': '15', 'font-weight': '800',
+        'font-family': 'JetBrains Mono, monospace', fill: colors[i]
+      });
+      coreNum.textContent = cfg.num;
+      g.appendChild(coreNum);
+
+      // Base plinth
+      g.appendChild(mk('rect', {
+        x: cfg.cx - halfW - 6, y: cfg.shaftBot,
+        width: cfg.width + 12, height: 10,
+        fill: colors[i]
+      }));
+      g.appendChild(mk('path', {
+        d: `M ${cfg.cx - halfW - 6} ${cfg.shaftBot + 10} L ${cfg.cx + halfW + 6} ${cfg.shaftBot + 10} L ${cfg.cx + halfCapW} ${cfg.botY} L ${cfg.cx - halfCapW} ${cfg.botY} Z`,
+        fill: colors[i]
+      }));
+
+      // Plinth Label with Title & Phase
+      const labelBox = mk('rect', {
+        x: cfg.cx - 100, y: cfg.botY + 12,
+        width: 200, height: 44, rx: 8,
+        fill: 'rgba(15, 23, 42, 0.9)',
+        stroke: colors[i], 'stroke-width': '1.5'
+      });
+      g.appendChild(labelBox);
+
+      const titleText = mk('text', {
+        x: cfg.cx, y: cfg.botY + 31,
+        'text-anchor': 'middle', 'font-size': '14', 'font-weight': '700',
+        'font-family': 'Plus Jakarta Sans, sans-serif', fill: '#ffffff'
+      });
+      titleText.textContent = titles[i];
+      g.appendChild(titleText);
+
+      const phaseText = mk('text', {
+        x: cfg.cx, y: cfg.botY + 47,
+        'text-anchor': 'middle', 'font-size': '10', 'font-weight': '600',
+        'font-family': 'Plus Jakarta Sans, sans-serif', fill: colors[i],
+        'letter-spacing': '1px'
+      });
+      phaseText.textContent = phases[i].toUpperCase();
+      g.appendChild(phaseText);
+
+      // Interactive Click Listener to reveal the square thing
+      g.addEventListener('click', () => togglePillar(i));
+
+      pillarGroups.push(g);
+      svg.appendChild(g);
+    });
+
     head.after(svg);
+
+    // Sync initial active state
+    syncCardVisibility();
   }, 1500);
 
   // Normalize Instagram handle display to e_cell_rscoe
@@ -146,8 +293,19 @@
       if (/^\s*$/.test(w)) return w;
       const pos = wi.indexOf(i);
       const prev = parts.slice(0, i).join('');
-      const afterColon = /[:]\s*$/.test(prev);
-      if (pos === 0 || pos === wi.length - 1 || afterColon || !MINOR.has(w)) {
+      const afterPunct = /[:.!?\n]\s*$/.test(prev);
+      if (w.includes('.')) {
+        return w.split('.').map((segment, sIdx) => {
+          if (!segment) return '';
+          if (sIdx > 0 || pos === 0 || pos === wi.length - 1 || afterPunct || !MINOR.has(segment)) {
+            if (segment === 'e-cell') return 'E-Cell';
+            if (segment === 'rscoe') return 'RSCOE';
+            return segment.charAt(0).toUpperCase() + segment.slice(1);
+          }
+          return segment;
+        }).join('.');
+      }
+      if (pos === 0 || pos === wi.length - 1 || afterPunct || !MINOR.has(w)) {
         if (w === 'e-cell') return 'E-Cell';
         if (w === 'rscoe') return 'RSCOE';
         return w.charAt(0).toUpperCase() + w.slice(1);
@@ -254,9 +412,61 @@
     try { centerSpeakerOverlays(); } catch (e) {}
     try { tuneContact(); } catch (e) {}
     try { countUpInnovators(); } catch (e) {}
-    try { centerLoneBranch(); } catch (e) {}
+    try { renderBranchTree(); } catch (e) {}
     try { centerConnect(); } catch (e) {}
+    try { tuneTitles(); } catch (e) {}
   }, 1000);
+
+  // Animate moving highlights across title lead texts (Empowering Future & About)
+  function tuneTitles() {
+    // 1. Hero title
+    const heroH1 = document.querySelector('section.relative.min-h-screen h1');
+    if (heroH1) {
+      if (!heroH1.dataset.leadHighlighted) {
+        heroH1.childNodes.forEach((n) => {
+          if (n.nodeType === 3 && /Empowering Future/i.test(n.textContent)) {
+            const sp = document.createElement('span');
+            sp.className = 'hero-lead-highlight';
+            sp.textContent = 'Empowering Future ';
+            sp.style.marginRight = '0.2rem';
+            heroH1.replaceChild(sp, n);
+            heroH1.dataset.leadHighlighted = '1';
+          }
+        });
+      }
+      const heroSpan = heroH1.querySelector('span.bg-clip-text');
+      if (heroSpan && !heroSpan.classList.contains('team-gradient-text')) {
+        heroSpan.classList.add('team-gradient-text');
+      }
+    }
+
+    // 2. About page title
+    const aboutH1 = document.querySelector('main h1');
+    if (aboutH1 && /\/about/.test(location.pathname)) {
+      if (!aboutH1.dataset.leadHighlighted) {
+        aboutH1.childNodes.forEach((n) => {
+          if (n.nodeType === 3 && /About/i.test(n.textContent)) {
+            const sp = document.createElement('span');
+            sp.className = 'about-title-lead';
+            sp.textContent = 'About ';
+            sp.style.marginRight = '0.35rem';
+            aboutH1.replaceChild(sp, n);
+            aboutH1.dataset.leadHighlighted = '1';
+          }
+        });
+      }
+      const aboutSpan = aboutH1.querySelector('span[class*="bg-clip-text"], span.bg-gradient-to-r');
+      if (aboutSpan && !aboutSpan.classList.contains('team-gradient-text')) {
+        aboutSpan.classList.add('team-gradient-text');
+      }
+    }
+
+    // 3. Navbar brand
+    const navRscoe = document.querySelector('nav a span.text-blue-500, header a span.text-blue-500');
+    if (navRscoe && !navRscoe.classList.contains('team-gradient-text')) {
+      navRscoe.classList.add('team-gradient-text');
+    }
+  }
 
   // Normalize Instagram handle display to e_cell_rscoe (persistent for SPA re-renders)
   function fixInstagram() {
@@ -286,34 +496,137 @@
     });
   }
 
-  // Home "Connect with the E-Cell Team": center text + cards
+  // Home "Connect with the E-Cell Team": full-width spacious bento layout utilizing the full space
   function centerConnect() {
     if (/blogdetails|contact|events|team|gallery|e-summit|about/.test(location.pathname)) return;
     const h = [...document.querySelectorAll('h2')].find((e) => /connect with/i.test(e.textContent));
     if (!h) return;
     const sec = h.closest('section');
-    if (!sec || sec.dataset.centered) return;
-    sec.dataset.centered = '1';
+    if (!sec) return;
+    sec.setAttribute('id', 'contact');
+    sec.classList.add('home-connect-section');
+    sec.style.width = '100%';
+    sec.style.paddingTop = '6rem';
+    sec.style.paddingBottom = '7rem';
+
     const cont = sec.querySelector('.container');
     if (cont) {
-      cont.style.display = 'flex';
-      cont.style.flexDirection = 'column';
-      cont.style.alignItems = 'center';
-      cont.style.textAlign = 'center';
+      cont.style.maxWidth = '1200px';
+      cont.style.width = '100%';
+      cont.style.marginLeft = 'auto';
+      cont.style.marginRight = 'auto';
+      cont.style.paddingLeft = '1.5rem';
+      cont.style.paddingRight = '1.5rem';
     }
-    const grid = sec.querySelector('.grid');
-    if (grid) {
-      grid.style.maxWidth = '760px';
-      grid.style.width = '100%';
-      grid.style.marginLeft = 'auto';
-      grid.style.marginRight = 'auto';
+
+    const outerGrid = sec.querySelector('.grid.gap-12') || sec.querySelector('.grid');
+    if (outerGrid) {
+      outerGrid.style.display = 'block';
+      outerGrid.style.maxWidth = '100%';
+      outerGrid.style.width = '100%';
+      outerGrid.style.marginLeft = 'auto';
+      outerGrid.style.marginRight = 'auto';
     }
-    sec.querySelectorAll('div').forEach((d) => {
-      const c = d.className.toString();
-      if (/^flex /.test(c) || / flex /.test(' ' + c)) d.style.justifyContent = 'center';
-    });
+
+    const spaceWrap = sec.querySelector('.space-y-8') || sec.querySelector('.space-y-6') || sec.querySelector('.max-w-3xl');
+    if (spaceWrap) {
+      spaceWrap.style.maxWidth = '100%';
+      spaceWrap.style.width = '100%';
+    }
+
+    // Header elements: center them
+    const pLabel = spaceWrap ? spaceWrap.querySelector('p:first-of-type') : null;
+    if (pLabel) {
+      pLabel.style.textAlign = 'center';
+      pLabel.style.letterSpacing = '0.3em';
+      pLabel.style.marginBottom = '0.5rem';
+    }
+    h.style.textAlign = 'center';
+    h.style.marginBottom = '1rem';
+
+    const pDesc = spaceWrap ? spaceWrap.querySelector('p.text-muted-foreground') : null;
+    if (pDesc) {
+      pDesc.style.textAlign = 'center';
+      pDesc.style.maxWidth = '680px';
+      pDesc.style.marginLeft = 'auto';
+      pDesc.style.marginRight = 'auto';
+      pDesc.style.marginBottom = '3.5rem';
+      pDesc.style.fontSize = '1.1rem';
+      pDesc.style.lineHeight = '1.6';
+    }
+
+    // Cards list: single-column wide horizontal stack matching Image 2
+    const cardsGrid = sec.querySelector('.rounded-2xl')?.parentElement || (spaceWrap ? spaceWrap.querySelector('.grid') : null);
+    if (cardsGrid) {
+      cardsGrid.style.display = 'flex';
+      cardsGrid.style.flexDirection = 'column';
+      cardsGrid.style.gap = '1rem';
+      cardsGrid.style.maxWidth = '820px';
+      cardsGrid.style.width = '100%';
+      cardsGrid.style.marginLeft = 'auto';
+      cardsGrid.style.marginRight = 'auto';
+
+      const cards = [...cardsGrid.children];
+      cards.forEach((card, idx) => {
+        card.style.width = '100%';
+        card.style.gridColumn = 'auto';
+        card.style.background = 'rgba(13, 17, 28, 0.75)';
+        card.style.backdropFilter = 'blur(12px)';
+        card.style.border = '1px solid rgba(255, 255, 255, 0.08)';
+        card.style.borderRadius = '1rem';
+        card.style.padding = '1.25rem 1.75rem';
+        card.style.display = 'flex';
+        card.style.flexDirection = 'column';
+        card.style.justifyContent = 'center';
+        card.style.transition = 'all 0.25s ease';
+        card.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.25)';
+
+        // Inner row alignment: icons strictly left-aligned
+        card.querySelectorAll('div').forEach((d) => {
+          if (/(^|\s)flex(\s|$)/.test(d.className.toString())) {
+            d.style.justifyContent = 'flex-start';
+            d.style.alignItems = idx === 2 ? 'flex-start' : 'center'; // phone card has two numbers
+            d.style.textAlign = 'left';
+            d.style.width = '100%';
+            d.style.gap = '1.25rem';
+          }
+        });
+
+        // Icon box styling - BLUE
+        const iconDiv = card.querySelector('.rounded-xl') || card.querySelector('.flex > div:first-child');
+        if (iconDiv) {
+          iconDiv.style.width = '46px';
+          iconDiv.style.height = '46px';
+          iconDiv.style.minWidth = '46px';
+          iconDiv.style.flexShrink = '0';
+          iconDiv.style.display = 'flex';
+          iconDiv.style.alignItems = 'center';
+          iconDiv.style.justifyContent = 'center';
+          iconDiv.style.borderRadius = '0.875rem';
+          iconDiv.style.background = 'rgba(59, 130, 246, 0.12)';
+          iconDiv.style.color = '#60a5fa';
+          iconDiv.style.border = '1px solid rgba(59, 130, 246, 0.3)';
+          const svg = iconDiv.querySelector('svg');
+          if (svg) svg.style.stroke = '#60a5fa';
+        }
+
+        // Card typography
+        card.querySelectorAll('p.font-medium').forEach((p) => {
+          p.style.fontSize = '1rem';
+          p.style.fontWeight = '600';
+          p.style.color = '#f8fafc';
+          p.style.marginBottom = '0.25rem';
+          p.style.textAlign = 'left';
+        });
+        card.querySelectorAll('a, p.text-muted-foreground, p:not(.font-medium)').forEach((el) => {
+          el.style.textAlign = 'left';
+          el.style.color = '#60a5fa';
+        });
+      });
+    }
   }
-  // Contact page: properly center the section and use the available space
+
+  // Contact page: align icons cleanly on the left inside cards
   function tuneContact() {
     document.querySelectorAll('a[href^="mailto:ecellrscoe01@gmail.com"]').forEach((m) => {
       m.setAttribute('href', 'mailto:contact@ecellrscoe.org');
@@ -325,7 +638,6 @@
     if (!main.dataset.contactLayout) {
       main.dataset.contactLayout = '1';
       main.style.maxWidth = '1120px';
-      main.style.textAlign = 'center';
       main.style.display = 'flex';
       main.style.flexDirection = 'column';
       main.style.justifyContent = 'center';
@@ -339,8 +651,9 @@
       head.dataset.contactHead = '1';
       head.style.maxWidth = '660px';
       head.style.margin = '0 auto 4.5rem';
+      head.style.textAlign = 'center';
     }
-    // cards fill the leftover width/height and center their own content
+    // cards fill the leftover width/height and have cleanly aligned icons
     const grid = main.querySelector('.grid');
     if (!grid) return;
     grid.style.flex = '1 1 auto';
@@ -349,15 +662,35 @@
     [...grid.children].forEach((c) => {
       c.style.display = 'flex';
       c.style.flexDirection = 'column';
-      c.style.justifyContent = 'center';
-      c.style.alignItems = 'center';
-      c.style.textAlign = 'center';
+      c.style.justifyContent = 'flex-start';
+      c.style.alignItems = 'stretch';
+      c.style.textAlign = 'left';
       c.style.height = '100%';
-      c.style.padding = '3.25rem 2.75rem';
+      c.style.padding = '3rem 2.5rem';
+      const h2 = c.querySelector('h2');
+      if (h2) {
+        h2.style.textAlign = 'center';
+        h2.style.marginBottom = '2rem';
+      }
       c.querySelectorAll('div').forEach((d) => {
         if (/(^|\s)flex(\s|$)/.test(d.className.toString())) {
-          d.style.justifyContent = 'center';
+          d.style.justifyContent = 'flex-start';
           d.style.alignItems = 'center';
+          d.style.textAlign = 'left';
+          d.style.width = '100%';
+        }
+      });
+      // Ensure icon wrappers have identical fixed dimensions and left alignment
+      c.querySelectorAll('svg').forEach((svg) => {
+        const iconWrap = svg.parentElement;
+        if (iconWrap && /rounded-2xl/.test(iconWrap.className.toString())) {
+          iconWrap.style.width = '46px';
+          iconWrap.style.height = '46px';
+          iconWrap.style.minWidth = '46px';
+          iconWrap.style.flexShrink = '0';
+          iconWrap.style.display = 'flex';
+          iconWrap.style.alignItems = 'center';
+          iconWrap.style.justifyContent = 'center';
         }
       });
     });
@@ -386,28 +719,265 @@
     requestAnimationFrame(tick);
   }
 
-  // About page: center the lone "Branch 05" card inside the branch tree grid
-  function centerLoneBranch() {
+  // About page: render the organic tree architecture with Core Platform as base
+  function renderBranchTree() {
     if (!/\/about/.test(location.pathname)) return;
-    const badge = [...document.querySelectorAll('span')].find((e) => /^Branch 05$/.test(e.textContent.trim()));
-    if (!badge) return;
-    let card = badge;
-    while (card && !(card.parentElement && /(^|\s)grid(\s|$)/.test(card.parentElement.className.toString()))) card = card.parentElement;
-    const grid = card && card.parentElement;
-    if (!grid) return;
-    const tpl = getComputedStyle(grid).gridTemplateColumns;
-    const cols = (!tpl || tpl === 'none') ? 1 : tpl.split(' ').filter(Boolean).length;
-    if (cols !== 2) { // single column: the card already spans full width
-      card.style.gridColumn = '';
-      card.style.width = '';
-      card.style.justifySelf = '';
+    const p = [...document.querySelectorAll('p')].find((el) => el.textContent.includes('Core Platform & Branch Tree'));
+    if (!p) return;
+    const headerBox = p.parentElement;
+    const container = headerBox && headerBox.parentElement;
+    if (!container) return;
+
+    if (document.getElementById('branch-tree-interactive-container')) {
+      if (window._updateTreeLines) window._updateTreeLines();
       return;
     }
-    const w = Math.round(grid.children[0].getBoundingClientRect().width);
-    card.style.gridColumn = '1 / -1';
-    card.style.width = w + 'px';
-    card.style.justifySelf = 'center';
-    card.dataset.branchCentered = '1';
+
+    const corePlatformDiv = container.querySelector('.flex.flex-col.items-center.justify-center');
+    const branchesGrid = container.querySelector('.grid.grid-cols-1.md\\:grid-cols-2');
+    if (!corePlatformDiv || !branchesGrid) return;
+
+    const oldWire = corePlatformDiv.querySelector('.w-0\\.5');
+    if (oldWire) oldWire.remove();
+
+    corePlatformDiv.className = 'tree-base-platform relative z-20 mt-12 flex flex-col items-center justify-center';
+    corePlatformDiv.style.marginBottom = '0';
+    container.appendChild(corePlatformDiv);
+
+    const cards = [...branchesGrid.children];
+    if (cards.length < 5) return;
+
+    const treeWrapper = document.createElement('div');
+    treeWrapper.id = 'branch-tree-interactive-container';
+    treeWrapper.className = 'relative w-full max-w-6xl mx-auto my-8';
+
+    container.insertBefore(treeWrapper, corePlatformDiv);
+
+    const tiersContainer = document.createElement('div');
+    tiersContainer.className = 'relative z-10 flex flex-col gap-28 w-full';
+
+    // Tier Top: Branch 05 (Canopy)
+    const topRow = document.createElement('div');
+    topRow.className = 'tree-tier tree-tier-top flex justify-center items-center w-full';
+    cards[4].id = 'tree-card-05';
+    cards[4].style.width = '100%';
+    cards[4].style.maxWidth = '520px';
+    cards[4].style.margin = '0 auto';
+    topRow.appendChild(cards[4]);
+
+    // Tier Mid: Branch 03 & Branch 04
+    const midRow = document.createElement('div');
+    midRow.className = 'tree-tier tree-tier-mid grid grid-cols-1 md:grid-cols-2 w-full';
+    midRow.style.columnGap = '150px';
+    midRow.style.rowGap = '3.5rem';
+    cards[2].id = 'tree-card-03';
+    cards[3].id = 'tree-card-04';
+    midRow.appendChild(cards[2]);
+    midRow.appendChild(cards[3]);
+
+    // Tier Low: Branch 01 & Branch 02
+    const lowRow = document.createElement('div');
+    lowRow.className = 'tree-tier tree-tier-low grid grid-cols-1 md:grid-cols-2 w-full';
+    lowRow.style.columnGap = '150px';
+    lowRow.style.rowGap = '3.5rem';
+    cards[0].id = 'tree-card-01';
+    cards[1].id = 'tree-card-02';
+    lowRow.appendChild(cards[0]);
+    lowRow.appendChild(cards[1]);
+
+    tiersContainer.appendChild(topRow);
+    tiersContainer.appendChild(midRow);
+    tiersContainer.appendChild(lowRow);
+
+    treeWrapper.appendChild(tiersContainer);
+    treeWrapper.appendChild(corePlatformDiv);
+
+    const baseCard = corePlatformDiv.querySelector('.relative.group.p-1');
+    if (baseCard) {
+      baseCard.id = 'tree-card-base';
+      baseCard.style.boxShadow = '0 0 50px rgba(59, 130, 246, 0.45), 0 20px 40px rgba(0,0,0,0.8)';
+    }
+
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.id = 'tree-network-svg';
+    svg.setAttribute('class', 'tree-svg-layer pointer-events-none absolute inset-0 w-full h-full');
+    svg.style.position = 'absolute';
+    svg.style.top = '0';
+    svg.style.left = '0';
+    svg.style.width = '100%';
+    svg.style.height = '100%';
+    svg.style.zIndex = '15';
+    svg.style.overflow = 'visible';
+
+    svg.innerHTML = `
+      <defs>
+        <linearGradient id="trunkGrad" x1="0%" y1="100%" x2="0%" y2="0%">
+          <stop offset="0%" stop-color="#3b82f6" />
+          <stop offset="45%" stop-color="#8b5cf6" />
+          <stop offset="100%" stop-color="#06b6d4" />
+        </linearGradient>
+        <linearGradient id="branchGradLeft" x1="100%" y1="100%" x2="0%" y2="0%">
+          <stop offset="0%" stop-color="#8b5cf6" />
+          <stop offset="100%" stop-color="#ec4899" />
+        </linearGradient>
+        <linearGradient id="branchGradRight" x1="0%" y1="100%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#8b5cf6" />
+          <stop offset="100%" stop-color="#06b6d4" />
+        </linearGradient>
+        <filter id="glowFilter" x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur stdDeviation="4" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+        <filter id="nodeGlow" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="6" result="blur2" />
+          <feMerge>
+            <feMergeNode in="blur2" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+      </defs>
+      <g id="tree-roots-group" opacity="0.75"></g>
+      <g id="tree-branches-group"></g>
+      <g id="tree-nodes-group"></g>
+    `;
+
+    treeWrapper.appendChild(svg);
+    branchesGrid.remove();
+
+    function updateLines() {
+      const wrapRect = treeWrapper.getBoundingClientRect();
+      if (wrapRect.width === 0) return;
+
+      const isMobile = window.innerWidth <= 768;
+
+      const getPos = (id) => {
+        const el = document.getElementById(id);
+        if (!el) return null;
+        const r = el.getBoundingClientRect();
+        return {
+          x: r.left - wrapRect.left + r.width / 2,
+          y: r.top - wrapRect.top + r.height / 2,
+          top: r.top - wrapRect.top,
+          bottom: r.bottom - wrapRect.top,
+          left: r.left - wrapRect.left,
+          right: r.right - wrapRect.left,
+          width: r.width,
+          height: r.height
+        };
+      };
+
+      const cBase = getPos('tree-card-base');
+      const c01 = getPos('tree-card-01');
+      const c02 = getPos('tree-card-02');
+      const c03 = getPos('tree-card-03');
+      const c04 = getPos('tree-card-04');
+      const c05 = getPos('tree-card-05');
+
+      if (!cBase || !c01 || !c02 || !c03 || !c04 || !c05) return;
+
+      const trunkX = cBase.x;
+      const trunkBaseY = cBase.top;
+      const trunkTopY = c05.bottom;
+
+      const branchesG = document.getElementById('tree-branches-group');
+      const nodesG = document.getElementById('tree-nodes-group');
+      const rootsG = document.getElementById('tree-roots-group');
+
+      const rBY = cBase.bottom + 35;
+      rootsG.innerHTML = `
+        <path d="M ${trunkX} ${cBase.bottom} Q ${trunkX - 60} ${rBY - 15} ${trunkX - 140} ${rBY}" stroke="#3b82f6" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-dasharray="5 5" />
+        <path d="M ${trunkX} ${cBase.bottom} L ${trunkX} ${rBY + 10}" stroke="#8b5cf6" stroke-width="3" fill="none" stroke-linecap="round" stroke-dasharray="6 6" />
+        <path d="M ${trunkX} ${cBase.bottom} Q ${trunkX + 60} ${rBY - 15} ${trunkX + 140} ${rBY}" stroke="#06b6d4" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-dasharray="5 5" />
+        <circle cx="${trunkX - 140}" cy="${rBY}" r="4" fill="#3b82f6" filter="url(#glowFilter)" />
+        <circle cx="${trunkX}" cy="${rBY + 10}" r="4.5" fill="#8b5cf6" filter="url(#glowFilter)" />
+        <circle cx="${trunkX + 140}" cy="${rBY}" r="4" fill="#06b6d4" filter="url(#glowFilter)" />
+      `;
+
+      if (!isMobile) {
+        const trunk = `
+          <line id="trunk-main-line" x1="${trunkX}" y1="${trunkBaseY}" x2="${trunkX}" y2="${trunkTopY}" stroke="url(#trunkGrad)" stroke-width="6" stroke-linecap="round" filter="url(#glowFilter)" />
+          <line x1="${trunkX}" y1="${trunkBaseY}" x2="${trunkX}" y2="${trunkTopY}" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-dasharray="8 14" opacity="0.85" class="tree-pulse-flow" />
+        `;
+
+        const forkLowY = c01.y + 15;
+        const forkMidY = c03.y + 15;
+
+        const curveOffset = Math.max(50, Math.abs(trunkX - c01.right) * 0.55);
+        const b01 = `M ${trunkX} ${forkLowY} C ${trunkX - curveOffset} ${forkLowY}, ${c01.right + curveOffset} ${c01.y}, ${c01.right} ${c01.y}`;
+        const b02 = `M ${trunkX} ${forkLowY} C ${trunkX + curveOffset} ${forkLowY}, ${c02.left - curveOffset} ${c02.y}, ${c02.left} ${c02.y}`;
+        const b03 = `M ${trunkX} ${forkMidY} C ${trunkX - curveOffset} ${forkMidY}, ${c03.right + curveOffset} ${c03.y}, ${c03.right} ${c03.y}`;
+        const b04 = `M ${trunkX} ${forkMidY} C ${trunkX + curveOffset} ${forkMidY}, ${c04.left - curveOffset} ${c04.y}, ${c04.left} ${c04.y}`;
+
+        branchesG.innerHTML = trunk + `
+          <path id="branch-path-01" d="${b01}" stroke="url(#branchGradLeft)" stroke-width="4" fill="none" stroke-linecap="round" filter="url(#glowFilter)" />
+          <path id="branch-path-02" d="${b02}" stroke="url(#branchGradRight)" stroke-width="4" fill="none" stroke-linecap="round" filter="url(#glowFilter)" />
+          <path id="branch-path-03" d="${b03}" stroke="url(#branchGradLeft)" stroke-width="4" fill="none" stroke-linecap="round" filter="url(#glowFilter)" />
+          <path id="branch-path-04" d="${b04}" stroke="url(#branchGradRight)" stroke-width="4" fill="none" stroke-linecap="round" filter="url(#glowFilter)" />
+
+          <path d="${b01}" stroke="#ffffff" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-dasharray="6 12" opacity="0.75" class="tree-pulse-flow" />
+          <path d="${b02}" stroke="#ffffff" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-dasharray="6 12" opacity="0.75" class="tree-pulse-flow" />
+          <path d="${b03}" stroke="#ffffff" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-dasharray="6 12" opacity="0.75" class="tree-pulse-flow" />
+          <path d="${b04}" stroke="#ffffff" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-dasharray="6 12" opacity="0.75" class="tree-pulse-flow" />
+        `;
+
+        const makeNode = (x, y, color = '#8b5cf6', size = 5) => `
+          <circle cx="${x}" cy="${y}" r="${size * 2}" fill="${color}" opacity="0.3" filter="url(#nodeGlow)" />
+          <circle cx="${x}" cy="${y}" r="${size}" fill="#ffffff" stroke="${color}" stroke-width="2.5" />
+        `;
+
+        nodesG.innerHTML = `
+          ${makeNode(trunkX, forkLowY, '#8b5cf6', 6)}
+          ${makeNode(trunkX, forkMidY, '#a855f7', 6)}
+          ${makeNode(trunkX, trunkTopY, '#06b6d4', 6)}
+          ${makeNode(trunkX, trunkBaseY, '#3b82f6', 7)}
+          ${makeNode(c01.right, c01.y, '#ec4899', 5)}
+          ${makeNode(c02.left, c02.y, '#06b6d4', 5)}
+          ${makeNode(c03.right, c03.y, '#ec4899', 5)}
+          ${makeNode(c04.left, c04.y, '#06b6d4', 5)}
+        `;
+      } else {
+        const trunk = `
+          <line x1="${trunkX}" y1="${trunkBaseY}" x2="${trunkX}" y2="${c05.top}" stroke="url(#trunkGrad)" stroke-width="4" stroke-linecap="round" filter="url(#glowFilter)" />
+          <line x1="${trunkX}" y1="${trunkBaseY}" x2="${trunkX}" y2="${c05.top}" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="6 12" opacity="0.8" class="tree-pulse-flow" />
+        `;
+        branchesG.innerHTML = trunk;
+        nodesG.innerHTML = `
+          <circle cx="${trunkX}" cy="${trunkBaseY}" r="5" fill="#3b82f6" />
+          <circle cx="${trunkX}" cy="${c05.top}" r="5" fill="#06b6d4" />
+        `;
+      }
+    }
+
+    window._updateTreeLines = updateLines;
+    updateLines();
+    window.addEventListener('resize', updateLines);
+
+    const attachHover = (cardId, branchId, glowColor) => {
+      const card = document.getElementById(cardId);
+      if (!card) return;
+      card.addEventListener('mouseenter', () => {
+        const b = document.getElementById(branchId);
+        if (b) {
+          b.style.stroke = glowColor;
+          b.style.strokeWidth = '6';
+        }
+      });
+      card.addEventListener('mouseleave', () => {
+        const b = document.getElementById(branchId);
+        if (b) {
+          b.style.stroke = '';
+          b.style.strokeWidth = '4';
+        }
+      });
+    };
+
+    attachHover('tree-card-01', 'branch-path-01', '#f43f5e');
+    attachHover('tree-card-02', 'branch-path-02', '#38bdf8');
+    attachHover('tree-card-03', 'branch-path-03', '#f43f5e');
+    attachHover('tree-card-04', 'branch-path-04', '#38bdf8');
   }
 
   // Events: E-Summit first, with the generated '26 artwork on its card

@@ -31,8 +31,99 @@
       .bg-clip-text { font-family: 'Instrument Serif', Georgia, serif !important; font-style: italic !important; font-weight: 700 !important; letter-spacing: 0; text-transform: none; }
       /* Page titles in the serif italic accent font */
       h1, h2, h1[class], h2[class] { font-family: 'Instrument Serif', Georgia, serif !important; font-style: italic !important; font-weight: 700 !important; text-transform: none !important; }
+      /* Universal team gradient animation keyframes */
+      @keyframes team-gradient {
+        0% { background-position: 0% center; }
+        100% { background-position: 200% center; }
+      }
+
       /* Hero headline back to the sans font; keep serif for the gradient accent word */
-      section.relative.min-h-screen h1 { font-family: 'Plus Jakarta Sans', sans-serif !important; font-style: normal !important; font-weight: 800 !important; }
+      section.relative.min-h-screen h1 {
+        font-family: 'Plus Jakarta Sans', sans-serif !important;
+        font-style: normal !important;
+        font-weight: 800 !important;
+        color: #ffffff !important;
+      }
+      /* Resize ONLY the word 'Entrepreneurs' and apply the Team page animated gradient highlight */
+      section.relative.min-h-screen h1 span.bg-clip-text {
+        font-family: 'Instrument Serif', Georgia, serif !important;
+        font-style: italic !important;
+        font-weight: 700 !important;
+        font-size: 1.22em !important;
+        line-height: 1.15 !important;
+        display: inline-block !important;
+        vertical-align: middle !important;
+        background-image: linear-gradient(90deg, #3b82f6 0%, #ffffff 50%, #3b82f6 100%) !important;
+        background-size: 200% auto !important;
+        -webkit-background-clip: text !important;
+        background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        animation: team-gradient 4s linear infinite !important;
+      }
+      /* Hero lead title 'Empowering Future' is pure solid white itself (like 'Meet Our') */
+      .hero-lead-highlight,
+      section.relative.min-h-screen h1 .hero-lead-highlight {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background: none !important;
+        animation: none !important;
+        display: inline !important;
+      }
+
+      /* Hero responsive headline & generous header spacing for mobile */
+      @media (max-width: 768px) {
+        section.relative.min-h-screen {
+          padding-top: 9rem !important;
+          padding-bottom: 5.5rem !important;
+        }
+        section.relative.min-h-screen > .container {
+          padding-top: 1.5rem !important;
+        }
+        section.relative.min-h-screen h1 {
+          font-size: clamp(2.1rem, 8.2vw, 2.75rem) !important;
+          line-height: 1.15 !important;
+          margin-top: 0.75rem !important;
+        }
+        section.relative.min-h-screen h1 span.bg-clip-text {
+          font-size: 1.12em !important;
+          line-height: 1.1 !important;
+        }
+      }
+
+      /* Header Logo: 'RSCOE' in 'E-CELL RSCOE' with Team page animated gradient */
+      nav a span.text-blue-500,
+      header a span.text-blue-500,
+      a:has(img[alt="E-Cell Logo"]) span.text-blue-500,
+      .font-bold:has(span.text-blue-500) span.text-blue-500 {
+        background-image: linear-gradient(90deg, #3b82f6 0%, #ffffff 50%, #3b82f6 100%) !important;
+        background-size: 200% auto !important;
+        -webkit-background-clip: text !important;
+        background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        animation: team-gradient 4s linear infinite !important;
+        display: inline-block !important;
+      }
+
+      /* About page title 'E-Cell RSCOE' with Team page animated gradient */
+      main h1 span.bg-gradient-to-r,
+      h1:has(span) span[class*="from-blue-400"],
+      main h1 span[class*="bg-clip-text"] {
+        background-image: linear-gradient(90deg, #3b82f6 0%, #ffffff 50%, #3b82f6 100%) !important;
+        background-size: 200% auto !important;
+        -webkit-background-clip: text !important;
+        background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        animation: team-gradient 4s linear infinite !important;
+        display: inline-block !important;
+      }
+      /* About page title lead 'About' is pure solid white itself (like 'Meet Our') */
+      .about-title-lead {
+        color: #ffffff !important;
+        -webkit-text-fill-color: #ffffff !important;
+        background: none !important;
+        animation: none !important;
+        display: inline !important;
+      }
       section.relative.min-h-screen .font-black { font-family: 'Instrument Serif', Georgia, serif !important; font-style: italic !important; font-weight: 700 !important; word-spacing: 0.12em; }
       section span[class*='text-6xl'] { font-family: 'Instrument Serif', Georgia, serif !important; font-style: italic !important; }
       /* Hero letter spacing */
@@ -89,11 +180,402 @@
       section.relative.min-h-screen:has(.max-w-3xl:hover) .bg-cover {
         filter: grayscale(1) sepia(0) saturate(1) hue-rotate(0deg) brightness(1.08);
       }
+
+      /* Hero "ENTREPRENEURS" font roulette (see assets/hero-font-cycle.js) */
+      .hero-font-cycling {
+        display: inline-block;
+        cursor: pointer;
+        user-select: none;
+      }
+      .hero-font-fixated {
+        display: inline-block;
+        cursor: pointer;
+        user-select: none;
+        animation: hero-font-pop 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      @keyframes hero-font-pop {
+        0% { transform: scale(1.08); filter: drop-shadow(0 0 18px rgba(168,85,247,0.45)); }
+        60% { transform: scale(0.98); }
+        100% { transform: scale(1); filter: none; }
+      }
+
+      /* =========================================================
+         Contact Page (/contact): Clean, perfectly aligned icons
+         ========================================================= */
+      main[data-contact-layout] {
+        max-width: 1120px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+      }
+      main[data-contact-layout] .grid > div {
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-start !important;
+        align-items: stretch !important;
+        text-align: left !important;
+        padding: 3rem 2.5rem !important;
+      }
+      main[data-contact-layout] .grid > div h2 {
+        text-align: center !important;
+        margin-bottom: 2rem !important;
+      }
+      main[data-contact-layout] .grid > div .flex {
+        display: flex !important;
+        justify-content: flex-start !important;
+        align-items: center !important;
+        text-align: left !important;
+        width: 100% !important;
+        gap: 1.25rem !important;
+      }
+      main[data-contact-layout] .grid > div .flex > div:first-child {
+        width: 46px !important;
+        height: 46px !important;
+        min-width: 46px !important;
+        flex-shrink: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+      }
+      main[data-contact-layout] .grid > div .flex > div:last-child {
+        text-align: left !important;
+      }
+
+      /* =========================================================
+         Home Page: "Connect with the E-Cell Team" Full Space Utilization
+         ========================================================= */
+      section#contact.py-24,
+      section.home-connect-section {
+        width: 100% !important;
+        padding-top: 6rem !important;
+        padding-bottom: 7rem !important;
+      }
+      section#contact .container,
+      section.home-connect-section .container {
+        max-width: 1200px !important;
+        width: 100% !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        padding-left: 1.5rem !important;
+        padding-right: 1.5rem !important;
+      }
+      /* Remove the restrictive single-column / 760px clamp from outer grid */
+      section#contact .grid.gap-12,
+      section.home-connect-section .grid.gap-12 {
+        display: block !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+      }
+      section#contact .space-y-6,
+      section.home-connect-section .space-y-6 {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+      }
+      /* Section Header: Centered, spacious, elegant typography */
+      section#contact .space-y-6 > p:first-of-type.text-muted-foreground,
+      section.home-connect-section .space-y-6 > p:first-of-type.text-muted-foreground {
+        text-align: center !important;
+        letter-spacing: 0.35em !important;
+        font-size: 0.85rem !important;
+        font-weight: 700 !important;
+        color: #a855f7 !important;
+        text-transform: uppercase !important;
+        margin-bottom: 0.75rem !important;
+      }
+      section#contact .space-y-6 > h2,
+      section.home-connect-section .space-y-6 > h2 {
+        text-align: center !important;
+        font-size: clamp(2rem, 4vw, 3rem) !important;
+        font-weight: 800 !important;
+        line-height: 1.2 !important;
+        margin-bottom: 1rem !important;
+      }
+      section#contact .space-y-6 > p.text-muted-foreground,
+      section.home-connect-section .space-y-6 > p.text-muted-foreground {
+        text-align: center !important;
+        max-width: 680px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        margin-bottom: 3.5rem !important;
+        font-size: 1.1rem !important;
+        line-height: 1.6 !important;
+        color: #94a3b8 !important;
+      }
+      /* Single-column wide cards stack matching Image 2 */
+      section#contact .grid.gap-5,
+      section#contact div.grid:has(.rounded-2xl),
+      section#contact [class*="grid-cols-3"],
+      section#contact .space-y-8 > div.grid,
+      section#contact .space-y-6 > div.grid,
+      section.home-connect-section div.grid:has(.rounded-2xl) {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 1rem !important;
+        max-width: 820px !important;
+        width: 100% !important;
+        margin: 0 auto !important;
+      }
+      /* Card styling matching Image 2 */
+      section#contact .rounded-2xl,
+      section.home-connect-section .rounded-2xl {
+        width: 100% !important;
+        max-width: 100% !important;
+        background: rgba(13, 17, 28, 0.75) !important;
+        backdrop-filter: blur(12px) !important;
+        -webkit-backdrop-filter: blur(12px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 1rem !important;
+        padding: 1.25rem 1.75rem !important;
+        transition: all 0.25s ease !important;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: center !important;
+      }
+      section#contact .rounded-2xl:hover,
+      section.home-connect-section .rounded-2xl:hover {
+        border-color: rgba(59, 130, 246, 0.45) !important;
+        background: rgba(18, 25, 42, 0.85) !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 8px 30px rgba(59, 130, 246, 0.16) !important;
+      }
+      /* Inside card: row layout */
+      section#contact .rounded-2xl .flex,
+      section.home-connect-section .rounded-2xl .flex {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        text-align: left !important;
+        gap: 1.25rem !important;
+        width: 100% !important;
+      }
+      /* Card 3 (Phone): align-items: flex-start because of two phone lines */
+      section#contact .rounded-2xl:nth-child(3) .flex,
+      section.home-connect-section .rounded-2xl:nth-child(3) .flex {
+        align-items: flex-start !important;
+      }
+      /* Card icon container - BLUE */
+      section#contact .rounded-2xl .flex > div:first-child,
+      section.home-connect-section .rounded-2xl .flex > div:first-child {
+        width: 46px !important;
+        height: 46px !important;
+        min-width: 46px !important;
+        border-radius: 0.875rem !important;
+        background: rgba(59, 130, 246, 0.12) !important;
+        color: #60a5fa !important;
+        border: 1px solid rgba(59, 130, 246, 0.3) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-shrink: 0 !important;
+        transition: all 0.25s ease !important;
+      }
+      section#contact .rounded-2xl .flex > div:first-child svg,
+      section.home-connect-section .rounded-2xl .flex > div:first-child svg {
+        stroke: #60a5fa !important;
+        width: 1.25rem !important;
+        height: 1.25rem !important;
+      }
+      section#contact .rounded-2xl:hover .flex > div:first-child,
+      section.home-connect-section .rounded-2xl:hover .flex > div:first-child {
+        background: rgba(59, 130, 246, 0.22) !important;
+        border-color: rgba(59, 130, 246, 0.6) !important;
+        color: #93c5fd !important;
+        box-shadow: 0 0 20px rgba(59, 130, 246, 0.35) !important;
+      }
+      /* Card text */
+      section#contact .rounded-2xl .flex > div:last-child,
+      section.home-connect-section .rounded-2xl .flex > div:last-child {
+        text-align: left !important;
+      }
+      section#contact .rounded-2xl p.font-medium,
+      section.home-connect-section .rounded-2xl p.font-medium {
+        font-size: 1rem !important;
+        font-weight: 600 !important;
+        color: #f8fafc !important;
+        margin-bottom: 0.25rem !important;
+        text-align: left !important;
+      }
+      section#contact .rounded-2xl a,
+      section#contact .rounded-2xl p.text-muted-foreground,
+      section.home-connect-section .rounded-2xl a,
+      section.home-connect-section .rounded-2xl p.text-muted-foreground {
+        font-size: 0.9rem !important;
+        color: #94a3b8 !important;
+        text-align: left !important;
+        transition: color 0.2s ease !important;
+      }
+      section#contact .rounded-2xl a,
+      section.home-connect-section .rounded-2xl a {
+        color: #60a5fa !important;
+      }
+      section#contact .rounded-2xl a:hover,
+      section.home-connect-section .rounded-2xl a:hover {
+        color: #93c5fd !important;
+        text-decoration: underline !important;
+      }
+      /* Connect section address & details in crisp blue matching links */
+      section#contact .rounded-2xl p.text-muted-foreground,
+      section#contact .rounded-2xl p:not(.font-medium),
+      section.home-connect-section .rounded-2xl p.text-muted-foreground,
+      section.home-connect-section .rounded-2xl p:not(.font-medium) {
+        color: #60a5fa !important;
+      }
+
+      /* =========================================================
+         Team Section: 3D Hover Pop-Out Effect
+         ========================================================= */
+      .team-leader-card,
+      .team-member-card {
+        transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), z-index 0.3s ease !important;
+        position: relative !important;
+      }
+      .team-leader-card:hover,
+      .team-member-card:hover {
+        z-index: 50 !important;
+      }
+      /* Pop the circular avatar frame forward and upward */
+      .team-leader-card .relative.mx-auto,
+      .team-member-card .relative.mx-auto {
+        transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.45s ease, filter 0.45s ease !important;
+        will-change: transform, filter;
+      }
+      .team-leader-card:hover .relative.mx-auto {
+        transform: translateY(-24px) scale(1.15) !important;
+        filter: drop-shadow(0 25px 40px rgba(0, 0, 0, 0.9)) drop-shadow(0 0 35px rgba(59, 130, 246, 0.6)) !important;
+      }
+      .team-member-card:hover .relative.mx-auto {
+        transform: translateY(-20px) scale(1.18) !important;
+        filter: drop-shadow(0 20px 35px rgba(0, 0, 0, 0.85)) drop-shadow(0 0 30px rgba(168, 85, 247, 0.6)) !important;
+      }
+      /* Person image pops out from inside the frame */
+      .team-leader-card img,
+      .team-member-card img {
+        transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+        transform-origin: bottom center !important;
+      }
+      .team-leader-card:hover img {
+        transform: scale(1.24) translateY(-6px) !important;
+      }
+      .team-member-card:hover img {
+        transform: scale(1.25) translateY(-5px) !important;
+      }
+      /* Background glow expansion */
+      .team-leader-card .blur-3xl,
+      .team-member-card .blur-xl {
+        transition: transform 0.6s ease, opacity 0.6s ease, filter 0.6s ease !important;
+      }
+      .team-leader-card:hover .blur-3xl {
+        transform: scale(1.6) translateY(-15px) !important;
+        opacity: 0.9 !important;
+        filter: blur(45px) !important;
+      }
+      .team-member-card:hover .blur-xl {
+        transform: scale(1.5) translateY(-10px) !important;
+        opacity: 0.85 !important;
+      }
+      /* Non-hovered members gently soften so hovered person leaps into focus */
+      .grid:has(.team-member-card:hover) .team-member-card:not(:hover),
+      .grid:has(.team-leader-card:hover) .team-leader-card:not(:hover) {
+        opacity: 0.75;
+        transition: opacity 0.35s ease;
+      }
+
+      /* =========================================================
+         About Section: Tree Architecture & Responsive Layout
+         ========================================================= */
+      #branch-tree-interactive-container {
+        width: 100% !important;
+        max-width: 1240px !important;
+        margin: 3.5rem auto !important;
+        position: relative !important;
+      }
+      .tree-tier-mid, .tree-tier-low {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        column-gap: 150px !important;
+        row-gap: 3.5rem !important;
+        width: 100% !important;
+      }
+      @media (max-width: 768px) {
+        .tree-tier-mid, .tree-tier-low {
+          grid-template-columns: 1fr !important;
+          column-gap: 0 !important;
+          row-gap: 2.75rem !important;
+        }
+        #tree-network-svg {
+          z-index: 0 !important;
+        }
+      }
+      .tree-base-platform {
+        margin-top: 6rem !important;
+        margin-bottom: 0 !important;
+        position: relative !important;
+        z-index: 20 !important;
+      }
+      .tree-pulse-flow {
+        animation: treePulseDash 2.5s linear infinite;
+      }
+      @keyframes treePulseDash {
+        from { stroke-dashoffset: 48; }
+        to { stroke-dashoffset: 0; }
+      }
+
+      /* =========================================================
+         Three Pillars: Dynamic Staggered Architecture & Interactive Reveal
+         ========================================================= */
+      .pillars-svg {
+        width: 100% !important;
+        max-width: 1100px !important;
+        display: block !important;
+        margin: 0 auto 1.5rem !important;
+        overflow: visible !important;
+        user-select: none !important;
+      }
+      .pillar-clickable {
+        cursor: pointer !important;
+        transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), filter 0.35s ease, opacity 0.3s ease !important;
+        transform-origin: bottom center !important;
+      }
+      .pillar-clickable:hover {
+        transform: translateY(-8px) scale(1.02) !important;
+      }
+      .pillar-clickable.pillar-active {
+        opacity: 1 !important;
+      }
+      .pillar-card-wrapper {
+        transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        border-radius: 1.5rem !important;
+        background: rgba(15, 23, 42, 0.75) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        backdrop-filter: blur(16px) !important;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6) !important;
+        padding: 2rem 1.5rem !important;
+      }
+      .pillar-card-wrapper.pillar-card-hidden {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        transform: translateY(24px) scale(0.92) !important;
+        pointer-events: none !important;
+        height: 0 !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+      }
+      .pillar-card-wrapper.pillar-card-visible {
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: translateY(0) scale(1) !important;
+        pointer-events: auto !important;
+      }
     </style>
     <link rel="stylesheet" crossorigin href="/assets/index-Bk9U75HH.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&family=Instrument+Serif:ital,wght@1,400&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300..800;1,300..800&family=Instrument+Serif:ital,wght@0,400;1,400&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Bebas+Neue&family=Playfair+Display:ital,wght@1,700&family=Space+Grotesk:wght@700&family=Syne:wght@800&family=Caveat:wght@700&family=Cinzel:wght@800&family=Orbitron:wght@800&family=Abril+Fatface&family=Silkscreen&display=swap" rel="stylesheet">
   </head>
 
   <body>
