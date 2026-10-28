@@ -1,0 +1,48 @@
+.has-section-video {
+  position: relative;
+  isolation: isolate;
+  background: #080c16 !important;
+}
+.section-background-video,
+.section-video-shade {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  border-radius: inherit;
+}
+.section-background-video {
+  z-index: -2;
+  object-fit: cover;
+  opacity: 0.85;
+}
+.section-video-shade {
+  z-index: -1;
+  background: linear-gradient(180deg, #080c1699, #080c16ad 50%, #080c16cf);
+}
+.fixed-video-page #root {
+  position: relative;
+  z-index: 1;
+}
+.fixed-video-page .fixed-video-shell,
+.fixed-video-page .fixed-video-section {
+  background: transparent !important;
+}
+.fixed-video-page #root .pointer-events-none.fixed.inset-0.-z-10 {
+  display: none !important;
+}
+.page-fixed-video.has-section-video {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.page-fixed-video .section-background-video { opacity: 1; }
+.page-fixed-video .section-video-shade {
+  background: linear-gradient(180deg, #080c1666, #080c1680 50%, #080c1699);
+}
+.events-video-page .page-fixed-video .section-video-shade {
+  background: linear-gradient(180deg, #080c1626, #080c1638 50%, #080c1652);
+}

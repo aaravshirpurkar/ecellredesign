@@ -23,6 +23,7 @@
   }
 
   function init() {
+    simplifyHome();
     const els = document.querySelectorAll('.stats-card p, section.relative.min-h-screen .font-black');
     const targets = [...els].filter((e) => /^[\d,]+\+?/.test(e.textContent.trim()));
     if (!targets.length) return false;
@@ -33,6 +34,37 @@
     }, { threshold: 0.4 });
     targets.forEach((e) => io.observe(e));
     return true;
+  }
+
+  // Home-page layout overrides, reapplied after client-side navigation.
+  function simplifyHome() {
+    if (location.pathname !== '/') return;
+    document.querySelectorAll('h2, h3').forEach((heading) => {
+      if (!/Three Pillars/i.test(heading.textContent.trim()) &&
+          !/^Flagship Events?$/i.test(heading.textContent.trim())) return;
+      const section = heading.closest('section');
+      if (section) {
+        section.dataset.homeRemoved = 'true';
+        section.inert = true;
+        section.setAttribute('aria-hidden', 'true');
+      }
+    });
+    document.querySelectorAll('section.relative.min-h-screen a[href="/events"] button').forEach((button) => {
+      button.childNodes.forEach((node) => {
+        if (node.nodeType === Node.TEXT_NODE && /Our Initiatives/i.test(node.textContent)) {
+          node.textContent = 'Browse Events ';
+        }
+      });
+      const icon = button.querySelector('svg');
+      if (icon && icon.classList.contains('lucide-arrow-down')) {
+        icon.classList.replace('lucide-arrow-down', 'lucide-arrow-right');
+        const paths = icon.querySelectorAll('path');
+        if (paths.length === 2) {
+          paths[0].setAttribute('d', 'M5 12h14');
+          paths[1].setAttribute('d', 'm12 5 7 7-7 7');
+        }
+      }
+    });
   }
 
   // React mounts asynchronously; keep watching for SPA re-renders.
@@ -49,80 +81,28 @@
     }
   }, 1200);
 
-  // Pillars architecture: vertically staggered heights & interactive click-to-reveal square cards
+  // Pillars architecture: animated illustration with simple, unboxed captions.
   setInterval(() => {
     if (document.querySelector('svg.pillars-svg')) return;
     const h = [...document.querySelectorAll('h2')].find((e) => /Three Pillars/.test(e.textContent));
     if (!h) return;
     const sec = h.closest('section');
+    if (sec.dataset.homeRemoved === 'true') return;
     const head = h.parentElement;
 
     // The three detailed cards ("the square thing")
     const cards = [...sec.querySelectorAll('.group')].filter((g) => /0[123]/.test(g.textContent)).slice(0, 3);
     if (cards.length < 3) return;
 
-    // Card container styling
+    // Keep React-owned cards mounted, but remove their visual and interactive UI.
     const cardsRow = cards[0].parentElement;
     if (cardsRow) {
-      cardsRow.className = 'relative flex flex-col md:flex-row items-center justify-center gap-8 lg:gap-12 min-h-[460px] py-6 w-full';
+      cardsRow.style.display = 'none';
+      cardsRow.inert = true;
+      cardsRow.setAttribute('aria-hidden', 'true');
     }
 
-    // Configure each card with glassmorphism and animated pop-in
-    cards.forEach((c, idx) => {
-      c.classList.add('pillar-card-wrapper');
-      c.style.width = '100%';
-      c.style.maxWidth = '360px';
-      c.style.margin = '0 auto';
-      c.style.transform = 'none';
-
-      // Inner spinning square portal size consistency
-      c.querySelectorAll('div').forEach((d) => {
-        const cl = (d.className && d.className.toString) ? d.className.toString() : '';
-        if (/w-40|w-36|w-48|w-42/.test(cl) && /h-40|h-36|h-48|h-42/.test(cl)) {
-          d.style.width = '190px';
-          d.style.height = '190px';
-          d.style.marginBottom = '2.5rem';
-        }
-      });
-    });
-
-    // Track active states: default Pillar 01 active on load, others revealed upon clicking
-    let activeStates = [true, false, false];
-
-    const syncCardVisibility = () => {
-      cards.forEach((c, i) => {
-        if (activeStates[i]) {
-          c.classList.remove('pillar-card-hidden');
-          c.classList.add('pillar-card-visible');
-        } else {
-          c.classList.remove('pillar-card-visible');
-          c.classList.add('pillar-card-hidden');
-        }
-      });
-      // Update SVG pillar visual states
-      pillarGroups.forEach((g, i) => {
-        if (activeStates[i]) {
-          g.classList.add('pillar-active');
-          g.style.opacity = '1';
-          g.style.filter = `drop-shadow(0 0 26px ${colors[i]})`;
-        } else {
-          g.classList.remove('pillar-active');
-          g.style.opacity = '0.7';
-          g.style.filter = 'none';
-        }
-      });
-    };
-
-    const togglePillar = (i) => {
-      if (activeStates[i] && activeStates.filter(Boolean).length > 1) {
-        activeStates[i] = false;
-      } else {
-        activeStates[i] = true;
-      }
-      syncCardVisibility();
-    };
-
-    const W = 1200, H = 450;
+    const W = 1200;
     const mk = (tag, attrs) => {
       const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
       for (const k in attrs) el.setAttribute(k, attrs[k]);
@@ -130,38 +110,31 @@
     };
 
     const svg = mk('svg', {
-      viewBox: `0 0 ${W} ${H}`,
+      viewBox: `0 70 ${W} 315`,
       class: 'pillars-svg',
       style: 'width:100%;max-width:1150px;display:block;margin:0 auto 1.5rem;overflow:visible;'
     });
-
-    // Balanced Architrave / Roof Beam connecting all three pillars at equal height
-    const roofBeam = mk('rect', {
-      x: 80, y: 30, width: 1040, height: 56, rx: 12,
-      fill: 'rgba(15, 23, 42, 0.85)',
-      stroke: 'rgba(168,85,247,0.5)',
-      'stroke-width': '2'
+    svg.setAttribute('role', 'group');
+    svg.setAttribute('aria-label', 'The three pillars of E-Cell RSCOE');
+    const defs = mk('defs', {});
+    ['#3b82f6', '#a855f7', '#10b981'].forEach((color, i) => {
+      const gradient = mk('linearGradient', { id: `pillar-metal-${i}`, x1: '0%', y1: '0%', x2: '100%', y2: '0%' });
+      [['0%', '#101827'], ['30%', color], ['50%', '#e2e8f0'], ['65%', color], ['100%', '#101827']].forEach(([offset, value]) => {
+        gradient.appendChild(mk('stop', { offset, 'stop-color': value }));
+      });
+      defs.appendChild(gradient);
     });
-    svg.appendChild(roofBeam);
-
-    const crestText = mk('text', {
-      x: 600, y: 65, 'text-anchor': 'middle',
-      'font-size': '22', 'font-weight': '800',
-      'font-family': 'Plus Jakarta Sans, sans-serif',
-      fill: '#c084fc',
-      'letter-spacing': '2px'
-    });
-    crestText.textContent = 'E-CELL RSCOE';
-    svg.appendChild(crestText);
+    svg.appendChild(defs);
+    svg.appendChild(mk('path', { d: 'M 140 370 H 1060', stroke: '#64748b', 'stroke-opacity': '.25', 'stroke-width': '1', fill: 'none' }));
 
     const colors = ['#3b82f6', '#a855f7', '#10b981'];
-    const titles = ['The Innovation', 'The Execution', 'The Impact'];
-    const phases = ['Creation Phase', 'Core Transmission', 'Scale Phase'];
-    const pillarGroups = [];
+    const names = ['Innovation', 'Execution', 'Impact'];
+    const descriptions = ['Turning ideas into viable solutions.', 'Bringing ideas to life through action.', 'Creating lasting value for society.'];
+    const meanings = names.map((name, i) => `${name} — ${descriptions[i]}`);
 
     // All 3 Pillars are the exact same size:
     // cx: 240, 600, 960
-    // topY: 86 (touches bottom of roof beam)
+    // topY: 86
     // shaftTop: 114
     // shaftBot: 334 (height: 220px)
     // botY: 368 (base height: 34px)
@@ -174,37 +147,40 @@
 
     pillarConfigs.forEach((cfg, i) => {
       const g = mk('g', {
-        class: 'pillar-clickable pillar-group',
+        class: 'pillar-group pillar-active',
         'data-index': i,
-        style: 'cursor:pointer;transition:all 0.35s ease;'
+        'aria-label': meanings[i],
+        style: `--pillar-color:${colors[i]};--pillar-delay:${i * 140}ms;`
       });
+      const body = mk('g', { class: 'pillar-body' });
+      g.appendChild(body);
 
       const halfW = cfg.width / 2;
       const capW = cfg.width + 28;
       const halfCapW = capW / 2;
 
       // Capital (Top molding)
-      g.appendChild(mk('path', {
+      body.appendChild(mk('path', {
         d: `M ${cfg.cx - halfCapW} ${cfg.topY} L ${cfg.cx + halfCapW} ${cfg.topY} L ${cfg.cx + halfW + 6} ${cfg.shaftTop} L ${cfg.cx - halfW - 6} ${cfg.shaftTop} Z`,
         fill: colors[i]
       }));
-      g.appendChild(mk('rect', {
+      body.appendChild(mk('rect', {
         x: cfg.cx - halfW - 6, y: cfg.shaftTop - 8,
         width: cfg.width + 12, height: 8,
         fill: colors[i]
       }));
 
       // Fluted Shaft
-      g.appendChild(mk('rect', {
+      body.appendChild(mk('rect', {
         x: cfg.cx - halfW, y: cfg.shaftTop,
         width: cfg.width, height: cfg.shaftBot - cfg.shaftTop,
-        fill: colors[i], opacity: '0.75'
+        fill: `url(#pillar-metal-${i})`, opacity: '0.8'
       }));
 
       // Shaft fluting lines
       const step = cfg.width / 7;
       for (let f = 1; f < 7; f++) {
-        g.appendChild(mk('line', {
+        body.appendChild(mk('line', {
           x1: cfg.cx - halfW + f * step, y1: cfg.shaftTop,
           x2: cfg.cx - halfW + f * step, y2: cfg.shaftBot,
           stroke: 'rgba(0,0,0,0.3)', 'stroke-width': '3.5'
@@ -213,7 +189,16 @@
 
       // Center glowing core badge with number
       const coreY = (cfg.shaftTop + cfg.shaftBot) / 2;
-      g.appendChild(mk('circle', {
+      body.appendChild(mk('path', {
+        d: `M ${cfg.cx} ${cfg.shaftBot - 8} V ${cfg.shaftTop + 8}`,
+        class: 'pillar-energy', stroke: '#ffffff', 'stroke-width': '2', fill: 'none',
+        'stroke-dasharray': '18 202', 'stroke-linecap': 'round'
+      }));
+      body.appendChild(mk('circle', {
+        cx: cfg.cx, cy: coreY, r: 34, class: 'pillar-core-ring',
+        fill: 'none', stroke: colors[i], 'stroke-width': '1', opacity: '.5'
+      }));
+      body.appendChild(mk('circle', {
         cx: cfg.cx, cy: coreY, r: 24,
         fill: '#090d16', stroke: colors[i], 'stroke-width': '2.5'
       }));
@@ -223,56 +208,44 @@
         'font-family': 'JetBrains Mono, monospace', fill: colors[i]
       });
       coreNum.textContent = cfg.num;
-      g.appendChild(coreNum);
+      body.appendChild(coreNum);
 
       // Base plinth
-      g.appendChild(mk('rect', {
+      body.appendChild(mk('rect', {
         x: cfg.cx - halfW - 6, y: cfg.shaftBot,
         width: cfg.width + 12, height: 10,
         fill: colors[i]
       }));
-      g.appendChild(mk('path', {
+      body.appendChild(mk('path', {
         d: `M ${cfg.cx - halfW - 6} ${cfg.shaftBot + 10} L ${cfg.cx + halfW + 6} ${cfg.shaftBot + 10} L ${cfg.cx + halfCapW} ${cfg.botY} L ${cfg.cx - halfCapW} ${cfg.botY} Z`,
         fill: colors[i]
       }));
 
-      // Plinth Label with Title & Phase
-      const labelBox = mk('rect', {
-        x: cfg.cx - 100, y: cfg.botY + 12,
-        width: 200, height: 44, rx: 8,
-        fill: 'rgba(15, 23, 42, 0.9)',
-        stroke: colors[i], 'stroke-width': '1.5'
-      });
-      g.appendChild(labelBox);
-
-      const titleText = mk('text', {
-        x: cfg.cx, y: cfg.botY + 31,
-        'text-anchor': 'middle', 'font-size': '14', 'font-weight': '700',
-        'font-family': 'Plus Jakarta Sans, sans-serif', fill: '#ffffff'
-      });
-      titleText.textContent = titles[i];
-      g.appendChild(titleText);
-
-      const phaseText = mk('text', {
-        x: cfg.cx, y: cfg.botY + 47,
-        'text-anchor': 'middle', 'font-size': '10', 'font-weight': '600',
-        'font-family': 'Plus Jakarta Sans, sans-serif', fill: colors[i],
-        'letter-spacing': '1px'
-      });
-      phaseText.textContent = phases[i].toUpperCase();
-      g.appendChild(phaseText);
-
-      // Interactive Click Listener to reveal the square thing
-      g.addEventListener('click', () => togglePillar(i));
-
-      pillarGroups.push(g);
       svg.appendChild(g);
     });
 
     head.after(svg);
+    const captions = document.createElement('div');
+    captions.className = 'pillar-captions';
+    meanings.forEach((meaning, i) => {
+      const caption = document.createElement('p');
+      const name = document.createElement('strong');
+      name.textContent = names[i];
+      const description = document.createElement('span');
+      description.textContent = ` — ${descriptions[i]}`;
+      caption.append(name, description);
+      caption.style.setProperty('--pillar-color', colors[i]);
+      captions.appendChild(caption);
+    });
+    svg.after(captions);
 
-    // Sync initial active state
-    syncCardVisibility();
+    const visibilityObserver = new IntersectionObserver(([entry]) => {
+      svg.classList.toggle('pillars-in-view', entry.isIntersecting);
+      if (entry.isIntersecting) svg.classList.add('pillars-assembled');
+      if (!svg.isConnected) visibilityObserver.disconnect();
+    }, { threshold: 0.15 });
+    visibilityObserver.observe(svg);
+
   }, 1500);
 
   // Normalize Instagram handle display to e_cell_rscoe
@@ -537,6 +510,7 @@
     // Header elements: center them
     const pLabel = spaceWrap ? spaceWrap.querySelector('p:first-of-type') : null;
     if (pLabel) {
+      if (/^contact$/i.test(pLabel.textContent.trim())) pLabel.style.display = 'none';
       pLabel.style.textAlign = 'center';
       pLabel.style.letterSpacing = '0.3em';
       pLabel.style.marginBottom = '0.5rem';
@@ -722,6 +696,15 @@
   // About page: render the organic tree architecture with Core Platform as base
   function renderBranchTree() {
     if (!/\/about/.test(location.pathname)) return;
+    const blueprint = [...document.querySelectorAll('main h2')].find((heading) => /Strategic Blueprint/i.test(heading.textContent));
+    if (blueprint) {
+      let block = blueprint.parentElement;
+      const main = blueprint.closest('main');
+      while (block.parentElement && block.parentElement !== main) block = block.parentElement;
+      block.style.display = 'none';
+      block.inert = true;
+      block.setAttribute('aria-hidden', 'true');
+    }
     const p = [...document.querySelectorAll('p')].find((el) => el.textContent.includes('Core Platform & Branch Tree'));
     if (!p) return;
     const headerBox = p.parentElement;
@@ -746,6 +729,11 @@
 
     const cards = [...branchesGrid.children];
     if (cards.length < 5) return;
+    cards.forEach((card) => {
+      card.querySelectorAll('span').forEach((label) => {
+        if (/^Branch\s+\d+$/i.test(label.textContent.trim())) label.style.display = 'none';
+      });
+    });
 
     const treeWrapper = document.createElement('div');
     treeWrapper.id = 'branch-tree-interactive-container';
@@ -754,14 +742,14 @@
     container.insertBefore(treeWrapper, corePlatformDiv);
 
     const tiersContainer = document.createElement('div');
-    tiersContainer.className = 'relative z-10 flex flex-col gap-28 w-full';
+    tiersContainer.className = 'tree-tiers relative z-10 flex flex-col w-full';
 
     // Tier Top: Branch 05 (Canopy)
     const topRow = document.createElement('div');
     topRow.className = 'tree-tier tree-tier-top flex justify-center items-center w-full';
     cards[4].id = 'tree-card-05';
     cards[4].style.width = '100%';
-    cards[4].style.maxWidth = '520px';
+    cards[4].style.maxWidth = '440px';
     cards[4].style.margin = '0 auto';
     topRow.appendChild(cards[4]);
 
@@ -795,7 +783,7 @@
     const baseCard = corePlatformDiv.querySelector('.relative.group.p-1');
     if (baseCard) {
       baseCard.id = 'tree-card-base';
-      baseCard.style.boxShadow = '0 0 50px rgba(59, 130, 246, 0.45), 0 20px 40px rgba(0,0,0,0.8)';
+      baseCard.style.boxShadow = '0 12px 40px rgba(0,0,0,0.4)';
     }
 
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
@@ -806,7 +794,7 @@
     svg.style.left = '0';
     svg.style.width = '100%';
     svg.style.height = '100%';
-    svg.style.zIndex = '15';
+    svg.style.zIndex = '0';
     svg.style.overflow = 'visible';
 
     svg.innerHTML = `
@@ -888,9 +876,9 @@
 
       const rBY = cBase.bottom + 35;
       rootsG.innerHTML = `
-        <path d="M ${trunkX} ${cBase.bottom} Q ${trunkX - 60} ${rBY - 15} ${trunkX - 140} ${rBY}" stroke="#3b82f6" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-dasharray="5 5" />
-        <path d="M ${trunkX} ${cBase.bottom} L ${trunkX} ${rBY + 10}" stroke="#8b5cf6" stroke-width="3" fill="none" stroke-linecap="round" stroke-dasharray="6 6" />
-        <path d="M ${trunkX} ${cBase.bottom} Q ${trunkX + 60} ${rBY - 15} ${trunkX + 140} ${rBY}" stroke="#06b6d4" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-dasharray="5 5" />
+        <path d="M ${trunkX} ${cBase.bottom} Q ${trunkX - 60} ${rBY - 15} ${trunkX - 140} ${rBY}" stroke="#3b82f6" stroke-width="2.5" fill="none" stroke-linecap="round" />
+        <path d="M ${trunkX} ${cBase.bottom} Q ${trunkX + 15} ${rBY} ${trunkX} ${rBY + 10}" stroke="#8b5cf6" stroke-width="3" fill="none" stroke-linecap="round" />
+        <path d="M ${trunkX} ${cBase.bottom} Q ${trunkX + 60} ${rBY - 15} ${trunkX + 140} ${rBY}" stroke="#06b6d4" stroke-width="2.5" fill="none" stroke-linecap="round" />
         <circle cx="${trunkX - 140}" cy="${rBY}" r="4" fill="#3b82f6" filter="url(#glowFilter)" />
         <circle cx="${trunkX}" cy="${rBY + 10}" r="4.5" fill="#8b5cf6" filter="url(#glowFilter)" />
         <circle cx="${trunkX + 140}" cy="${rBY}" r="4" fill="#06b6d4" filter="url(#glowFilter)" />
@@ -898,18 +886,17 @@
 
       if (!isMobile) {
         const trunk = `
-          <line id="trunk-main-line" x1="${trunkX}" y1="${trunkBaseY}" x2="${trunkX}" y2="${trunkTopY}" stroke="url(#trunkGrad)" stroke-width="6" stroke-linecap="round" filter="url(#glowFilter)" />
-          <line x1="${trunkX}" y1="${trunkBaseY}" x2="${trunkX}" y2="${trunkTopY}" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-dasharray="8 14" opacity="0.85" class="tree-pulse-flow" />
+          <path id="trunk-main-line" d="M ${trunkX - 13} ${trunkBaseY} C ${trunkX - 20} ${trunkBaseY - 150}, ${trunkX - 7} ${trunkTopY + 160}, ${trunkX - 2} ${trunkTopY} L ${trunkX + 2} ${trunkTopY} C ${trunkX + 12} ${trunkTopY + 160}, ${trunkX + 5} ${trunkBaseY - 150}, ${trunkX + 13} ${trunkBaseY} Z" fill="url(#trunkGrad)" opacity="0.8" />
         `;
 
-        const forkLowY = c01.y + 15;
-        const forkMidY = c03.y + 15;
+        const forkLowY = Math.min(trunkBaseY - 16, Math.max(c01.bottom, c02.bottom) + 35);
+        const forkMidY = Math.max(c03.bottom, c04.bottom) + 25;
 
-        const curveOffset = Math.max(50, Math.abs(trunkX - c01.right) * 0.55);
-        const b01 = `M ${trunkX} ${forkLowY} C ${trunkX - curveOffset} ${forkLowY}, ${c01.right + curveOffset} ${c01.y}, ${c01.right} ${c01.y}`;
-        const b02 = `M ${trunkX} ${forkLowY} C ${trunkX + curveOffset} ${forkLowY}, ${c02.left - curveOffset} ${c02.y}, ${c02.left} ${c02.y}`;
-        const b03 = `M ${trunkX} ${forkMidY} C ${trunkX - curveOffset} ${forkMidY}, ${c03.right + curveOffset} ${c03.y}, ${c03.right} ${c03.y}`;
-        const b04 = `M ${trunkX} ${forkMidY} C ${trunkX + curveOffset} ${forkMidY}, ${c04.left - curveOffset} ${c04.y}, ${c04.left} ${c04.y}`;
+        const curveOffset = Math.max(60, Math.abs(trunkX - c01.right) * 0.65);
+        const b01 = `M ${trunkX} ${forkLowY} C ${trunkX - curveOffset} ${forkLowY - 50}, ${c01.right + 25} ${c01.y + 60}, ${c01.right} ${c01.y}`;
+        const b02 = `M ${trunkX} ${forkLowY} C ${trunkX + curveOffset} ${forkLowY - 50}, ${c02.left - 25} ${c02.y + 60}, ${c02.left} ${c02.y}`;
+        const b03 = `M ${trunkX} ${forkMidY} C ${trunkX - curveOffset} ${forkMidY - 50}, ${c03.right + 25} ${c03.y + 60}, ${c03.right} ${c03.y}`;
+        const b04 = `M ${trunkX} ${forkMidY} C ${trunkX + curveOffset} ${forkMidY - 50}, ${c04.left - 25} ${c04.y + 60}, ${c04.left} ${c04.y}`;
 
         branchesG.innerHTML = trunk + `
           <path id="branch-path-01" d="${b01}" stroke="url(#branchGradLeft)" stroke-width="4" fill="none" stroke-linecap="round" filter="url(#glowFilter)" />
@@ -940,14 +927,12 @@
         `;
       } else {
         const trunk = `
-          <line x1="${trunkX}" y1="${trunkBaseY}" x2="${trunkX}" y2="${c05.top}" stroke="url(#trunkGrad)" stroke-width="4" stroke-linecap="round" filter="url(#glowFilter)" />
-          <line x1="${trunkX}" y1="${trunkBaseY}" x2="${trunkX}" y2="${c05.top}" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="6 12" opacity="0.8" class="tree-pulse-flow" />
+          <path d="M ${trunkX} ${trunkBaseY} C ${trunkX} ${trunkBaseY - 50}, 12 ${trunkBaseY - 50}, 12 ${trunkBaseY - 100} L 12 ${c05.y}" stroke="url(#trunkGrad)" stroke-width="5" stroke-linecap="round" fill="none" />
         `;
-        branchesG.innerHTML = trunk;
-        nodesG.innerHTML = `
-          <circle cx="${trunkX}" cy="${trunkBaseY}" r="5" fill="#3b82f6" />
-          <circle cx="${trunkX}" cy="${c05.top}" r="5" fill="#06b6d4" />
-        `;
+        branchesG.innerHTML = trunk + [c05, c03, c04, c01, c02].map((card) =>
+          `<path d="M 12 ${card.y + 40} Q 12 ${card.y}, ${card.left} ${card.y}" stroke="url(#trunkGrad)" stroke-width="2.5" fill="none" />`
+        ).join('');
+        nodesG.innerHTML = '';
       }
     }
 
